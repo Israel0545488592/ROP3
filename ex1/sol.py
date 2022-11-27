@@ -1,7 +1,7 @@
 '''
 
     subsetsum_req is agenerator for all subsets of an iterable
-    with a specific sum, it searches requrcivly throgh the different options (DFS)
+    with a specific sum, it searches requrcivly through the different options (DFS)
     BUT: it gets as arguments the remaining sum to search for and an iterator.
     Thus O(1) - time complexty (for each yeild), at any given moment
     the stack may hold O(n) iteraors where n is the size of the input (O(n) memory comlexty)
@@ -10,7 +10,7 @@
     PowerSetSum is a generator for all subsets sorted by sum using subsetsum_req
 
     small note: for collections that support bi-directional iterators
-    the function can be upgraded s.t it woild use 1 iterator (absolutly most efficient)
+    the function can be upgraded s.t it would use 1 iterator (absolutly most efficient)
 '''
 
 
@@ -52,6 +52,3 @@ def subsetsum_req(sum: Union[int, float], itr: Iterator) -> list:
 if __name__ == '__main__':
 
     for subset in PowerSetSum(range(5)):    print(subset)
-
-
-# todo: tests, git
