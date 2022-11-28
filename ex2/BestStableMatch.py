@@ -1,5 +1,4 @@
 '''
-
     The Stable Match Problome:
 
     input: 2 disjoint lists A & B.
@@ -24,21 +23,37 @@
     tha stesfies the participants better
 '''
 
-import custom_input as inp
-import custom_output as out
-from typing import Callable, List
+
+from custom_output import outype
+from typing import Mapping, Callable, Any, Iterable
 
 
-MatchingAlgo = Callable[[out.connections]]
+MatchingAlgo = Callable[[outype], Any]
 
 
-def StableMatching(algo: MatchingAlgo, first: List[List], second: List[List], output: out.connections, **kwargs):
+def StableMatching(algo: MatchingAlgo, first: Mapping[Any, Iterable], second: Mapping[Any, Iterable], graph: outype, **kwargs):
 
-    prioreties_first = [inp.prefreances(str(n), lambda item : l.index(item)) for n, l in enumerate(first)]
-    prioreties_second = [inp.prefreances(str(n), lambda item : l.index(item)) for n, l in enumerate(second)]
+    graph.build(first, second)
 
-    graph = output.__init__((prioreties_first, prioreties_second))
+    algo(graph, **kwargs)
 
-    algo(graph)
+    return graph.extract_result()
 
-    return graph.extract_matching
+
+def propose_regect(graph: outype):
+
+    stable = False
+    while not stable:
+        stable = True
+
+        item = next(graph.__iter__(singles = True, first = True))            
+        mate = next(graph.__iter__(singles = True, first = False))
+
+        if graph.match(item, mate):
+            stable = False
+
+
+def MyGreedy(graph: outype):    pass
+
+
+# tests methods before algoes
