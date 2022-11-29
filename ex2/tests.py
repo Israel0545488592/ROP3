@@ -30,6 +30,7 @@ class Tests(unittest.TestCase):
 
             self.graph = out
             self.graph.build(boys, girls)
+            self.assertEqual(len(self.graph), 3)
 
             self.assertEqual(len(self.graph.first_singles), 3)
             self.assertEqual(len(self.graph.second_singles), 3)
@@ -84,17 +85,16 @@ class Tests(unittest.TestCase):
 
     def test_algos(self):
 
-        for out in outypes:
-
-            print('final results: ', StableMatching(propose_regect, boys, girls, out))
+        for algo in algos:
+            for out in outypes:
+                print('final results: ', StableMatching(algo, boys, girls, out))
 
 
     def test_RandomTestRuns(self):
 
-        for out in outypes:
-
-            print('final results: ', RandomTestRuns(propose_regect, out, 10))
-
+        for algo in algos:
+            for out in outypes:
+                print('final results: ', RandomTestRuns(algo, out, 10))
 
 
 
@@ -110,5 +110,7 @@ if __name__ == '__main__':
              'josh':  ['daniela', 'alice', 'aliana']}
 
     outypes : List[outype] = [setesfaction(), matches()]
+
+    algos : List[MatchingAlgo] = [propose_regect, MyGreedy]
 
     unittest.main()

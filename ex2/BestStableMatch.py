@@ -26,7 +26,7 @@
 
 from custom_output import outype
 from typing import Mapping, Callable, Any, Iterable
-from numpy.random import randint
+from random import sample
 from itertools import permutations
 
 MatchingAlgo = Callable[[outype], Any]
@@ -37,14 +37,15 @@ def StableMatching(algo: MatchingAlgo, first: Mapping[Any, Iterable], second: Ma
     graph.build(first, second)
 
     algo(graph, **kwargs)
-
+    
     return graph.extract_result()
+
 
 
 def RandomTestRuns(algo: MatchingAlgo, graph: outype, size: int, **kwargs):
 
-    first  = list(randint(0, 10*size, size))
-    second = list(randint(-10*size, 0, size))
+    first  = list(sample(range(0, 10*size), size))
+    second = list(sample(range(-10*size, 0), size))
 
     first_prefs = {item : prefs for item, prefs in zip(first, permutations(second))}
     second_prefs = {item : prefs for item, prefs in zip(second, permutations(first))}
@@ -67,4 +68,29 @@ def propose_regect(graph: outype):
             break
 
 
-def MyGreedy(graph: outype):    pass
+def MyGreedy(graph: outype):
+
+    subgraph = set()
+
+    for priorty in range(len(graph))[::-1]:
+
+        ''' subgraph = graph [ edges of current iterations priorty + leftovers from last]'''
+
+        for single in graph.__iter__(singles = True, first  = True):
+
+            prefered = sorted(graph.get(single).prioreties.items(), key = lambda kv : kv[1])[priorty:]
+
+            subgraph.update({ (single, pref[0]) for pref in prefered })
+
+        for single in graph.__iter__(singles = True, first  = False):
+            
+            prefered = sorted(graph.get(single).prioreties.items(), key = lambda kv : kv[1])[priorty:]
+
+            subgraph.update({ (single, pref[0]) for pref in prefered })
+
+        # only reciprical prefrences
+        subgraph = {(item, prefrence) for item, prefrence in subgraph if (prefrence, item) in subgraph }
+
+        for item, mate in subgraph: graph.match(item, mate)
+
+    return graph.extract_result()

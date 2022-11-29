@@ -47,11 +47,14 @@ class outype(ABC, Iterable):
 
     #lazy initialization
     def build(self, first: Mapping[Any, Iterable], second: Mapping[Any, Iterable]):
+
+        if len(first) != len(second): raise ValueError('fthe lists are not compatabl')
         
         self.first_singles = { item : prefreances(first[item]) for item in first }
         self.second_singles = { item : prefreances(second[item]) for item in second }
         self.first_mached = {}
         self.second_mached = {}
+        self.size = len(first)
 
 
     def __iter__(self, singles: bool, first: bool) -> Iterator:
@@ -60,6 +63,9 @@ class outype(ABC, Iterable):
         if first and not singles:       return iter(self.first_mached)
         if not first and singles:       return iter(self.second_singles)
         if not first and not singles:   return iter(self.second_mached)
+
+
+    def __len__(self): return self.size
 
 
     def get(self, item) -> prefreances:
