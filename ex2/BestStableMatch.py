@@ -26,7 +26,8 @@
 
 from custom_output import outype
 from typing import Mapping, Callable, Any, Iterable
-
+from numpy.random import randint
+from itertools import permutations
 
 MatchingAlgo = Callable[[outype], Any]
 
@@ -40,20 +41,30 @@ def StableMatching(algo: MatchingAlgo, first: Mapping[Any, Iterable], second: Ma
     return graph.extract_result()
 
 
+def RandomTestRuns(algo: MatchingAlgo, graph: outype, size: int, **kwargs):
+
+    first  = list(randint(0, 10*size, size))
+    second = list(randint(-10*size, 0, size))
+
+    first_prefs = {item : prefs for item, prefs in zip(first, permutations(second))}
+    second_prefs = {item : prefs for item, prefs in zip(second, permutations(first))}
+
+    return StableMatching(algo, first_prefs, second_prefs, graph, **kwargs)
+
+
+
 def propose_regect(graph: outype):
 
-    stable = False
-    while not stable:
-        stable = True
+    while True:
 
-        item = next(graph.__iter__(singles = True, first = True))            
-        mate = next(graph.__iter__(singles = True, first = False))
+        try:
 
-        if graph.match(item, mate):
-            stable = False
+            item = next(graph.__iter__(singles = True, first = True))
+            mate = next(graph.__iter__(singles = True, first = False))
+            if graph.match(item, mate): stable = False
+        
+        except StopIteration:
+            break
 
 
 def MyGreedy(graph: outype):    pass
-
-
-# tests methods before algoes

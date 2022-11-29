@@ -1,5 +1,6 @@
 import unittest
 from custom_output import *
+from BestStableMatch import *
 from typing import List
 
 
@@ -14,6 +15,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.prefs.get_match(), 2)
         self.assertEqual(self.prefs[2], 1)
 
+
+        # generic parsing
         self.prefs = prefreances({'4' : 4, '3' : 3, '2' : 2, 'hogaboga' : 1})
         self.assertEqual(self.prefs.get_match(), -1)
         self.prefs.set_match(3)
@@ -23,17 +26,7 @@ class Tests(unittest.TestCase):
 
     def test_outypes(self):
 
-        outypes : List[outype] = [setesfaction(), matches()]
-
         for out in outypes:
-
-            girls = {'alice' :  ['bob', 'saeed', 'josh'],
-                     'aliana':  ['saeed', 'josh', 'bob'],
-                     'daniela': ['josh', 'saeed', 'bob']}
-
-            boys =  {'bob' :  ['alice', 'aliana', 'daniela'],
-                     'saeed': ['alice', 'aliana', 'daniela'],
-                     'josh':  ['daniela', 'alice', 'aliana']}
 
             self.graph = out
             self.graph.build(boys, girls)
@@ -89,8 +82,33 @@ class Tests(unittest.TestCase):
             print('final results:', self.graph.extract_result())
 
 
+    def test_algos(self):
+
+        for out in outypes:
+
+            print('final results: ', StableMatching(propose_regect, boys, girls, out))
+
+
+    def test_RandomTestRuns(self):
+
+        for out in outypes:
+
+            print('final results: ', RandomTestRuns(propose_regect, out, 10))
+
+
+
 
 
 if __name__ == '__main__':
+
+    girls = {'alice' :  ['bob', 'saeed', 'josh'],
+                     'aliana':  ['saeed', 'josh', 'bob'],
+                     'daniela': ['josh', 'saeed', 'bob']}
+
+    boys =  {'bob' :  ['alice', 'aliana', 'daniela'],
+             'saeed': ['alice', 'aliana', 'daniela'],
+             'josh':  ['daniela', 'alice', 'aliana']}
+
+    outypes : List[outype] = [setesfaction(), matches()]
 
     unittest.main()

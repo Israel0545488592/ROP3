@@ -54,7 +54,7 @@ class outype(ABC, Iterable):
         self.second_mached = {}
 
 
-    def __iter__(self, singles: bool, first: bool = True) -> Iterator:
+    def __iter__(self, singles: bool, first: bool) -> Iterator:
         
         if first and singles:           return iter(self.first_singles)
         if first and not singles:       return iter(self.first_mached)
