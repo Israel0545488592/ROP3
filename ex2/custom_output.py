@@ -15,20 +15,27 @@ class prefreances():
     # generic parser to a consistent data structure to work with
     def __init__(self, col: Iterable) -> None:
 
+        if len(col) < 1: raise ValueError('got no prefrences')
+
         get = (lambda key : col[key]) if isinstance(col, Mapping) else (lambda item : item)
         
-        self.prioreties = { get(item) : priorty  for priorty, item in enumerate(col) }
+        self.prioreties = { get(item) : len(col) -1 - priorty  for priorty, item in enumerate(col) }
 
-        self.match = -1
+        self.match = None
 
 
     def __getitem__(self, item) -> int: return self.prioreties[item]
 
     def __repr__(self) -> str: return self.prioreties.__repr__()
 
-    def get_match(self): return self.match
+    def get_match(self, priorty: bool = True):
+        
+        if priorty:
+            if self.match is None: return -1
+            return self[self.match]
+        return self.match
 
-    def set_match(self, item) -> None: self.match = self.prioreties[item]
+    def set_match(self, item) -> None: self.match = item
 
 
 ''' compact graph that acts as a manager of the 2 lists'''
@@ -42,43 +49,67 @@ class outype(ABC, Iterable):
     def build(self, first: Mapping[Any, Iterable], second: Mapping[Any, Iterable]):
         
         self.first_singles = { item : prefreances(first[item]) for item in first }
-        self.second = { item : prefreances(second[item]) for item in second }
+        self.second_singles = { item : prefreances(second[item]) for item in second }
         self.first_mached = {}
+        self.second_mached = {}
 
 
     def __iter__(self, singles: bool, first: bool = True) -> Iterator:
         
-        if first and singles:     return iter(self.first_singles)
-        if first and not singles: return iter(self.first_mached)
-        else:                     return iter(self.second)
+        if first and singles:           return iter(self.first_singles)
+        if first and not singles:       return iter(self.first_mached)
+        if not first and singles:       return iter(self.second_singles)
+        if not first and not singles:   return iter(self.second_mached)
 
 
-    def get(self, item, singles: bool = False, first: bool = False) -> prefreances:
+    def get(self, item) -> prefreances:
         
-        if first and singles:     return self.first_singles[item]
-        if first and not singles: return self.first_mached[item]
-        else:                     return self.second[item]
+        if item in self.first_singles:  return self.first_singles[item]
+        if item in self.first_mached:   return self.first_mached[item]
+        if item in self.second_singles: return self.second_singles[item]
+        if item in self.second_mached:  return self.second_mached[item]
 
     def match(self, item, mate):
 
-        item_prefs = self.get(item, first = True, singles = True)
+        item_prefs = self.get(item)
         mate_prefs = self.get(mate)
 
-        if mate_prefs.get_match() < mate_prefs[item]:
+        if mate_prefs.get_match() < mate_prefs[item] and item_prefs.get_match() < item_prefs[mate]:
 
-            old_match = mate_prefs.get_match()
+            old_match = mate_prefs.get_match(priorty = False)
 
             if old_match in self.first_mached:
                 
-                old_matchs_prefs =  self.get(item, first = True, singles = True)
-                old_matchs_prefs.set_match(-1)
+                old_matchs_prefs =  self.get(old_match)
+                old_matchs_prefs.set_match(None)
                 self.first_singles[old_match] = old_matchs_prefs
                 del self.first_mached[old_match]
 
+            old_match = item_prefs.get_match(priorty = False)
+
+            if old_match in self.second_mached:
+                
+                old_matchs_prefs =  self.get(old_match)
+                old_matchs_prefs.set_match(None)
+                self.second_singles[old_match] = old_matchs_prefs
+                del self.second_mached[old_match]
+
             mate_prefs.set_match(item)
             item_prefs.set_match(mate)
-            self.first_mached[item] = item_prefs
-            del self.first_singles[item]
+            
+            if item in self.first_singles:
+                self.first_mached[item] = item_prefs
+                del self.first_singles[item]
+            if mate in self.second_singles:
+                self.second_mached[mate] = mate_prefs
+                del self.second_singles[mate]
+            if item in self.second_singles:
+                self.second_mached[item] = item_prefs
+                del self.second_singles[item]
+            if mate in self.first_singles:
+                self.first_mached[mate] = mate_prefs
+                del self.first_singles[mate]
+
             return True
 
         return False
@@ -87,21 +118,24 @@ class outype(ABC, Iterable):
     def extract_result(self):   pass
 
 
-class outype_setesfaction(outype):
+class setesfaction(outype):
 
     def __init__(self,) -> None:
         super().__init__()
 
 
     def extract_result(self):
-        return reduce(sum, [(item, prefs.get_match()) for item, prefs in self.first_mached.items()]) / len(self.first_mached)
+
+        res = {**self.first_mached, **self.second_mached}
+
+        return reduce(lambda x, y: x + y, [prefs.get_match() for prefs in res.values()]) / len(res)
 
 
-class outype_matches(outype):
+class matches(outype):
 
     def __init__(self) -> None:
         super().__init__()
 
 
     def extract_result(self):
-        return [(item, prefs[prefs.get_match()]) for item, prefs in self.first_mached.items()]
+        return [(item, prefs.get_match(priorty = False)) for item, prefs in self.first_mached.items()]
